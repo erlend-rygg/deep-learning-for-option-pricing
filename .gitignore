@@ -132,3 +132,6 @@ dmypy.json
 
 # wandb / Hyperparam search log
 **/wandb
+
+# API keys
+setup.py
