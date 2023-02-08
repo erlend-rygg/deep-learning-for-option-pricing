@@ -134,4 +134,4 @@ dmypy.json
 **/wandb
 
 # API keys
-setup.py
+*setup.py
