@@ -129,10 +129,8 @@ dmypy.json
 #Data
 **/data
 
-
 # wandb / Hyperparam search log
 **/wandb
 
 # API keys
-*setup.py
 *config.py
