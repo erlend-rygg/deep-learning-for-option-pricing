@@ -28,10 +28,10 @@ You will need to create a `data` folder in the root directory of the project, as
 
 The data can be obtained from the following sources:
 
-- Option data: Download from optiondx.com
+- Option data: Download from https://www.optionsdx.com/
 - Interest rate data: Download from https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve&field_tdr_date_value=2023
 
-After obtaining the data, run the `data_processing.ipynb` notebook followed by the `data_filtering.ipynb` notebook. The resulting processed data should be placed in the `processed_data` folder.
+After obtaining the data, run the `data_processing.ipynb` notebook followed by the `data_filtering.ipynb` notebook. The resulting processed data should be placed in the `processed_data` folder, inside the data folder.
 
 Contributing
 If you'd like to contribute to the project, please feel free to submit pull requests or report issues.
