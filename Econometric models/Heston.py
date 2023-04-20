@@ -7,8 +7,6 @@ import time
 
 i = complex (0,1) # Define complex number i
 
-colab_path = "M:/Master/"
-
 @jit
 def charHeston(u, S0, r, T, sigma, kappa, theta, v0, rho):
     '''Implementation of the characteristic function of the Heston model'''
@@ -117,6 +115,8 @@ def create_data_np(df):
 
 def calculateHestonDate(data_cal, data_test, test_date, initial_parameters):
     '''Calculate the heston model parameters option data for date t-1 and calculate the option price for date t'''
+    t = time.time()
+
     # Calibrate the Heston model
     calibrationResult = calibrateHeston(
         data_cal[:, 0],
@@ -144,7 +144,7 @@ def calculateHestonDate(data_cal, data_test, test_date, initial_parameters):
         data_test[:, 4],
         *params
     )
-    print(f'{(np.sum((optionPricesHeston - data_test[:, 0]) ** 2) / len(optionPricesHeston))**(0.5):.4f} RMSE for {test_date}')
+    print(f'{(np.sum((optionPricesHeston - data_test[:, 0]) ** 2) / len(optionPricesHeston))**(0.5):.4f} RMSE for {test_date} with time {time.time() - t}')
     return optionPricesHeston, params
 
 def HestonYear(df, year):
@@ -158,26 +158,32 @@ def HestonYear(df, year):
     data_nps = df_year.groupby('Quote_date').apply(create_data_np)
 
     parameters = [0.02936084231134991, 0.040435318414851, 0.07357532840670486, 0.01697363646273281, -9.814464152491098e-08] # Initial parameters calculated on for last day of 2014
-    optionPrices_list = []
-    parameters_list = []
+    optionPrices_list = np.array([])
+    parameters_list = np.array([])
     
     t = time.time()
-    for i in range(len(data_nps-1)):
+    for i in range(len(data_nps)-1):
         optionPrice, parameters = calculateHestonDate(data_nps[i], data_nps[i+1], dates[i+1], parameters)
-        optionPrices_list.append(optionPrice)
-        parameters_list.append(parameters)
-    print(f'{year} finished with time: {time.time() - t}')  
+        optionPrices_list = np.append(optionPrices_list, optionPrice)
+        parameters_list = np.append(parameters_list, parameters)
+    print(f'{year} finished with time: {time.time() - t}')
 
     # Save option prices
-    df = df[df['Quote_date'] != dates[0]]
-    df['Heston_price'] = optionPrices_list
+    df_year = df_year[df_year['Quote_date'] != dates[0]] # Remove the first date from datafram as it's only used to calibrate the first set of parameters
+    df_year['Heston_price'] = optionPrices_list
     print('=====================')
-    print(f'Total RMSE {year}: {(np.sum((df["Heston_price"] - df["Price"]) ** 2) / len(df["Price"]))**(0.5)}')
-    df.to_csv(f'./data/results/{dates[1]}_{dates[-1]} Heston.csv', index=False)
+    print(f'Total RMSE {year}: {(np.sum((df_year["Heston_price"] - df_year["Price"]) ** 2) / len(df_year["Price"]))**(0.5)}')
+    df_year.to_csv(f'./data/results/{dates[1]}_{dates[-1]} Heston.csv', index=False)
+
 
     # Save parameters
-    df_params = pd.DataFrame(parameters_list, columns=['sigma', 'kappa', 'theta', 'v0', 'rho'])
-    df_params['Quote_date'] = dates[1:]
+    df_params = pd.DataFrame(dates[1:], columns = ['Quote_date'])
+    parameters_list = np.reshape(parameters_list, (len(df_params), 5))
+    df_params['sigma'] = parameters_list[:,0]
+    df_params['kappa'] = parameters_list[:,1]
+    df_params['theta'] = parameters_list[:,2]
+    df_params['v0'] = parameters_list[:,3]
+    df_params['rho'] = parameters_list[:,4]
     df_params.to_csv(f'./data/results/{dates[1]}_{dates[-1]} Heston parameters.csv', index=False)
 
 if __name__ == '__main__':
