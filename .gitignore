@@ -136,7 +136,7 @@ dmypy.json
 *config.py
 
 # Model checkpoints
-*/checkpoints
+**/checkpoints
 
 # Model checkpoint
 */checkpoint
